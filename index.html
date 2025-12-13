@@ -1,11 +1,85 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=armyday.html">
-    <title>Redirecting...</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ημέρες Στρατού</title>
+  <style>
+    /* Ολόκληρο background */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      text-align: center;
+      background: url('https://st3.depositphotos.com/5792148/15471/v/450/depositphotos_154711664-stock-illustration-cartoon-military-general-salute.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .container {
+      background-color: rgba(0,0,0,0.6); /* διάφανο μαύρο για καλύτερη ορατότητα κειμένου */
+      padding: 20px;
+      margin: 50px auto;
+      max-width: 400px;
+      border-radius: 10px;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    h1, p {
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
-    <p>Αν δεν γίνει αυτόματα η ανακατεύθυνση, κάνε κλικ <a href="armyday.html">εδώ</a>.</p>
+  <div class="container">
+    <h1>Ημέρες Στρατού</h1>
+    <p>Πληκτρολόγησε την ημερομηνία κατάταξης σου:</p>
+    <input type="date" id="enlistDate">
+    <button onclick="calculateDays()">Υπολογισμός ημερών</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    function calculateDays() {
+      const input = document.getElementById('enlistDate').value;
+      if(!input) {
+        alert("Παρακαλώ διάλεξε ημερομηνία!");
+        return;
+      }
+
+      const enlistDate = new Date(input);
+      const endDate = new Date(enlistDate);
+      endDate.setDate(enlistDate.getDate() + 365);
+
+      const today = new Date();
+      const timeDiff = endDate - today;
+      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+      const result = document.getElementById('result');
+      if(daysLeft > 0) {
+        result.textContent = `Απομένουν ${daysLeft} ημέρες μέχρι τις 365.`;
+      } else {
+        result.textContent = "Έχεις ολοκληρώσει τις 365 ημέρες!";
+      }
+    }
+  </script>
 </body>
 </html>
