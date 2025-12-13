@@ -4,31 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ημέρες Στρατού</title>
+
   <style>
-    /* Ολόκληρο background */
     body {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
-      color: white;
       text-align: center;
-      background: url('https://st3.depositphotos.com/5792148/15471/v/450/depositphotos_154711664-stock-illustration-cartoon-military-general-salute.jpg') no-repeat center center fixed;
+      background: url('https://st3.depositphotos.com/5792148/15471/v/450/depositphotos_154711664-stock-illustration-cartoon-military-general-salute.jpg')
+                  no-repeat center center fixed;
       background-size: cover;
     }
 
     .container {
-      background-color: rgba(0,0,0,0.6); /* διάφανο μαύρο για καλύτερη ορατότητα κειμένου */
-      padding: 20px;
-      margin: 50px auto;
-      max-width: 400px;
-      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 25px;
+      margin: 60px auto;
+      max-width: 420px;
+      border-radius: 12px;
+      color: black;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .creator {
+      font-size: 18px;
+      font-weight: 900;      /* ΕΝΤΟΝΑ */
+      color: #000000;        /* ΚΑΤΑΜΑΥΡΟ */
+      margin-bottom: 25px;
     }
 
     input, button {
       padding: 10px;
-      margin: 5px 0;
+      margin: 6px 0;
       width: 100%;
-      border-radius: 5px;
+      border-radius: 6px;
       border: none;
       font-size: 16px;
     }
@@ -37,30 +49,40 @@
       background-color: #4CAF50;
       color: white;
       cursor: pointer;
+      font-weight: bold;
     }
 
     button:hover {
-      background-color: #45a049;
+      background-color: #3e8e41;
     }
 
-    h1, p {
-      margin: 10px 0;
+    #result {
+      margin-top: 15px;
+      font-size: 17px;
+      font-weight: bold;
     }
   </style>
 </head>
+
 <body>
+
   <div class="container">
     <h1>Ημέρες Στρατού</h1>
+    <div class="creator">CREATED BY PANAGOPOULOS</div>
+
     <p>Πληκτρολόγησε την ημερομηνία κατάταξης σου:</p>
+
     <input type="date" id="enlistDate">
-    <button onclick="calculateDays()">Υπολογισμός ημερών</button>
+    <button onclick="calculateDays()">Υπολογισμός</button>
+
     <p id="result"></p>
   </div>
 
   <script>
     function calculateDays() {
       const input = document.getElementById('enlistDate').value;
-      if(!input) {
+
+      if (!input) {
         alert("Παρακαλώ διάλεξε ημερομηνία!");
         return;
       }
@@ -70,16 +92,20 @@
       endDate.setDate(enlistDate.getDate() + 365);
 
       const today = new Date();
-      const timeDiff = endDate - today;
-      const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      const diffTime = endDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       const result = document.getElementById('result');
-      if(daysLeft > 0) {
-        result.textContent = `Απομένουν ${daysLeft} ημέρες μέχρι τις 365.`;
+
+      if (diffDays > 0) {
+        result.textContent = `Απομένουν ${diffDays} ημέρες μέχρι την απόλυση.`;
+      } else if (diffDays === 0) {
+        result.textContent = "Απολύεσαι ΣΗΜΕΡΑ! 🎉";
       } else {
-        result.textContent = "Έχεις ολοκληρώσει τις 365 ημέρες!";
+        result.textContent = `Απολύθηκες πριν ${Math.abs(diffDays)} ημέρες.`;
       }
     }
   </script>
+
 </body>
 </html>
