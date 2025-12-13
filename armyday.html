@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ημέρες Κατάταξης</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: white;
+        text-align: center;
+        background: url('https://st3.depositphotos.com/5792148/15471/v/450/depositphotos_154711664-stock-illustration-cartoon-military-general-salute.jpg') no-repeat center center fixed;
+        background-size: cover;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    input, button {
+        font-size: 1.2em;
+        padding: 10px;
+        margin: 10px;
+        border-radius: 5px;
+        border: none;
+    }
+    button {
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<h1>Υπολογισμός Ημερών Κατάταξης</h1>
+<label>Εισάγετε ημερομηνία κατάταξης:</label><br>
+<input type="date" id="startDate">
+<button onclick="calculateDays()">Υπολογισμός</button>
+<h2 id="result"></h2>
+
+<script>
+function calculateDays() {
+    const input = document.getElementById('startDate').value;
+    if (!input) {
+        alert('Παρακαλώ εισάγετε μια ημερομηνία!');
+        return;
+    }
+    const startDate = new Date(input);
+    const today = new Date();
+    const diffTime = today - startDate; // σε milliseconds
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const remaining = 365 - diffDays;
+    if (remaining > 0) {
+        document.getElementById('result').innerText = `Απομένουν ${remaining} μέρες μέχρι τις 365.`;
+    } else {
+        document.getElementById('result').innerText = `Η περίοδος των 365 ημερών έχει ολοκληρωθεί!`;
+    }
+}
+</script>
+</body>
+</html>
