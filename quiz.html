@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>⚽ Football Quiz</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#111;
+  color:white;
+  display:flex;
+  gap:20px;
+  padding:20px;
+}
+#game,#scoreboard{
+  background:#222;
+  padding:20px;
+  border-radius:10px;
+}
+#game{width:65%;}
+#scoreboard{width:30%;}
+button{
+  padding:10px;
+  margin:5px;
+  min-width:220px;
+  cursor:pointer;
+}
+.correct{background:#4CAF50;color:white;}
+.wrong{background:#f44336;color:white;}
+#timer{font-size:22px;color:#ff9800;}
+.loading{color:#aaa;}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+<h1>⚽ Football Quiz</h1>
+
+<label>Teams:</label>
+<select id="teamCount">
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+</select>
+<button id="start">Start</button>
+
+<div id="qbox" style="display:none">
+  <h3 id="turn"></h3>
+  <p id="timer">⏱ 15</p>
+  <p id="loading" class="loading"></p>
+  <h2 id="qtext"></h2>
+  <div id="answers"></div>
+</div>
+</div>
+
+<div id="scoreboard">
+<h2>📊 Score</h2>
+<div id="teams"></div>
+<p>🏆 Win: 100 points</p>
+</div>
+
+<script>
+let teams=0, scores=[], current=0;
+let time=15, interval, canAnswer=true;
+let questions=[];
+
+// ===== Load Questions from OpenTDB =====
+async function loadQuestions(){
+  const res = await fetch(
+    "https://opentdb.com/api.php?amount=30&category=21&type=multiple"
+  );
+  const data = await res.json();
+  questions = data.results;
+}
+
+// ===== HTML Elements =====
+const startBtn=document.getElementById("start");
+const teamCount=document.getElementById("teamCount");
+const qbox=document.getElementById("qbox");
+const qtext=document.getElementById("qtext");
+const answersDiv=document.getElementById("answers");
+const turn=document.getElementById("turn");
+const timerEl=document.getElementById("timer");
+const teamsDiv=document.getElementById("teams");
+const loadingEl=document.getElementById("loading");
+
+// ===== Start Quiz =====
+startBtn.onclick=async()=>{
+  loadingEl.textContent="Loading questions...";
+  await loadQuestions();
+
+  teams=Number(teamCount.value);
+  scores=Array(teams).fill(0);
+  current=0;
+
+  teamsDiv.innerHTML="";
+  scores.forEach((_,i)=>{
+    teamsDiv.innerHTML+=`<div>Team ${i+1}: <span id="s${i}">0</span></div>`;
+  });
+
+  qbox.style.display="block";
+  ask();
+};
+
+// ===== Ask Question =====
+function ask(){
+  if(questions.length===0){
+    alert("No more questions!");
+    location.reload();
+    return;
+  }
+
+  clearInterval(interval);
+  time=15;
+  timerEl.textContent="⏱ "+time;
+
+  interval=setInterval(()=>{
+    time--;
+    timerEl.textContent="⏱ "+time;
+    if(time===0){
+      clearInterval(interval);
+      current=(current+1)%teams;
+      ask();
+    }
+  },1000);
+
+  canAnswer=true;
+  const q=questions.pop();
+
+  turn.textContent=`Turn: Team ${current+1}`;
+  qtext.innerHTML=q.question; // question may contain HTML entities
+
+  const answers=[q.correct_answer,...q.incorrect_answers].sort(()=>Math.random()-0.5);
+  answersDiv.innerHTML="";
+
+  answers.forEach(a=>{
+    const b=document.createElement("button");
+    b.innerHTML=a;
+    b.onclick=()=>check(b,a,q.correct_answer);
+    answersDiv.appendChild(b);
+  });
+}
+
+// ===== Check Answer =====
+function check(btn,a,correct){
+  if(!canAnswer) return;
+  canAnswer=false;
+  clearInterval(interval);
+
+  if(a===correct){
+    btn.classList.add("correct");
+    scores[current]+=5;
+  }else{
+    btn.classList.add("wrong");
+    [...answersDiv.children].forEach(b=>{
+      if(b.innerHTML===correct) b.classList.add("correct");
+    });
+  }
+
+  document.getElementById("s"+current).textContent=scores[current];
+
+  setTimeout(()=>{
+    if(scores.some(s=>s>=100)){
+      alert(`🏆 Team ${scores.findIndex(s=>s>=100)+1} wins!`);
+      location.reload();
+      return;
+    }
+    current=(current+1)%teams;
+    ask();
+  },1200);
+}
+</script>
+
+</body>
+</html>
