@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>⚽ Football Quiz</title>
-
 <style>
 body{
   font-family:Arial;
@@ -25,14 +24,19 @@ button{
   margin:5px;
   min-width:220px;
   cursor:pointer;
+  border:none;
+  border-radius:5px;
 }
 .correct{background:#4CAF50;color:white;}
 .wrong{background:#f44336;color:white;}
 #timer{font-size:22px;color:#ff9800;}
-.loading{color:#aaa;}
+.team-box{
+  margin:5px 0;
+  padding:5px 10px;
+  border-radius:5px;
+}
 </style>
 </head>
-
 <body>
 
 <div id="game">
@@ -46,10 +50,15 @@ button{
 </select>
 <button id="start">Start</button>
 
+<div id="teamSetup" style="display:none">
+  <h3>Set team names and colors</h3>
+  <div id="teamInputs"></div>
+  <button id="begin">Begin Quiz</button>
+</div>
+
 <div id="qbox" style="display:none">
   <h3 id="turn"></h3>
   <p id="timer">⏱ 15</p>
-  <p id="loading" class="loading"></p>
   <h2 id="qtext"></h2>
   <div id="answers"></div>
 </div>
@@ -62,44 +71,74 @@ button{
 </div>
 
 <script>
-let teams=0, scores=[], current=0;
+let teams=0, teamData=[], current=0;
 let time=15, interval, canAnswer=true;
 let questions=[];
 
-// ===== Load Questions from OpenTDB =====
+// ===== Words to identify football questions =====
+const footballKeywords = ["football","soccer","goal","fifa","world cup","premier league","champions league","goalkeeper","striker","midfielder"];
+
+// ===== Load Questions and filter football =====
 async function loadQuestions(){
-  const res = await fetch(
-    "https://opentdb.com/api.php?amount=30&category=21&type=multiple"
-  );
+  const res = await fetch("https://opentdb.com/api.php?amount=50&category=21&type=multiple");
   const data = await res.json();
-  questions = data.results;
+  // Filter questions for football
+  questions = data.results.filter(q=>{
+    const text = (q.question + " " + q.correct_answer + " " + q.incorrect_answers.join(" ")).toLowerCase();
+    return footballKeywords.some(k => text.includes(k));
+  });
+  if(questions.length===0){
+    alert("No football questions found! Try again.");
+  }
 }
 
 // ===== HTML Elements =====
 const startBtn=document.getElementById("start");
 const teamCount=document.getElementById("teamCount");
+const teamSetup=document.getElementById("teamSetup");
+const teamInputs=document.getElementById("teamInputs");
+const beginBtn=document.getElementById("begin");
 const qbox=document.getElementById("qbox");
 const qtext=document.getElementById("qtext");
 const answersDiv=document.getElementById("answers");
 const turn=document.getElementById("turn");
 const timerEl=document.getElementById("timer");
 const teamsDiv=document.getElementById("teams");
-const loadingEl=document.getElementById("loading");
 
-// ===== Start Quiz =====
-startBtn.onclick=async()=>{
-  loadingEl.textContent="Loading questions...";
+// ===== Start Setup =====
+startBtn.onclick=()=>{
+  teams = Number(teamCount.value);
+  teamInputs.innerHTML = "";
+  for(let i=0;i<teams;i++){
+    teamInputs.innerHTML += `
+      <div>
+        Team ${i+1} Name: <input type="text" id="tname${i}" value="Team ${i+1}">
+        Color: <input type="color" id="tcolor${i}" value="#${Math.floor(Math.random()*16777215).toString(16)}">
+      </div>
+    `;
+  }
+  teamSetup.style.display="block";
+};
+
+// ===== Begin Quiz =====
+beginBtn.onclick=async()=>{
   await loadQuestions();
+  if(questions.length===0) return;
 
-  teams=Number(teamCount.value);
-  scores=Array(teams).fill(0);
-  current=0;
+  teamData = [];
+  for(let i=0;i<teams;i++){
+    const name = document.getElementById("tname"+i).value || `Team ${i+1}`;
+    const color = document.getElementById("tcolor"+i).value;
+    teamData.push({name,color,score:0});
+  }
 
+  // Display teams
   teamsDiv.innerHTML="";
-  scores.forEach((_,i)=>{
-    teamsDiv.innerHTML+=`<div>Team ${i+1}: <span id="s${i}">0</span></div>`;
+  teamData.forEach((t,i)=>{
+    teamsDiv.innerHTML += `<div class="team-box" id="s${i}" style="background:${t.color}">${t.name}: 0</div>`;
   });
 
+  teamSetup.style.display="none";
   qbox.style.display="block";
   ask();
 };
@@ -129,12 +168,11 @@ function ask(){
   canAnswer=true;
   const q=questions.pop();
 
-  turn.textContent=`Turn: Team ${current+1}`;
-  qtext.innerHTML=q.question; // question may contain HTML entities
+  turn.textContent=`Turn: ${teamData[current].name}`;
+  qtext.innerHTML=q.question;
 
   const answers=[q.correct_answer,...q.incorrect_answers].sort(()=>Math.random()-0.5);
   answersDiv.innerHTML="";
-
   answers.forEach(a=>{
     const b=document.createElement("button");
     b.innerHTML=a;
@@ -151,7 +189,7 @@ function check(btn,a,correct){
 
   if(a===correct){
     btn.classList.add("correct");
-    scores[current]+=5;
+    teamData[current].score +=5;
   }else{
     btn.classList.add("wrong");
     [...answersDiv.children].forEach(b=>{
@@ -159,11 +197,12 @@ function check(btn,a,correct){
     });
   }
 
-  document.getElementById("s"+current).textContent=scores[current];
+  document.getElementById("s"+current).textContent = `${teamData[current].name}: ${teamData[current].score}`;
 
   setTimeout(()=>{
-    if(scores.some(s=>s>=100)){
-      alert(`🏆 Team ${scores.findIndex(s=>s>=100)+1} wins!`);
+    if(teamData.some(t=>t.score>=100)){
+      const winner = teamData.find(t=>t.score>=100);
+      alert(`🏆 ${winner.name} wins!`);
       location.reload();
       return;
     }
@@ -172,6 +211,5 @@ function check(btn,a,correct){
   },1200);
 }
 </script>
-
 </body>
 </html>
